@@ -1,5 +1,7 @@
 <template>
   <div class="home">
+    <b-button type="is-success" icon-left="user">ss</b-button>
+
   </div>
 </template>
 
