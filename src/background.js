@@ -101,11 +101,10 @@ const io = new Server(5050, {
 });
 
 io.on("connection", (socket) => {
-  console.log(socket.id);
+  console.log("socket Conectado", socket.id);
 
   socket.on("nuevo-totem", (data) => {
     socket.totem = data;
-    console.log(data);
     win.webContents.send("nuevo-totem", socket.totem);
   });
 
@@ -117,5 +116,17 @@ io.on("connection", (socket) => {
 
 ipcMain.handle("get-sockets", async () => {
   let sockets = await io.fetchSockets();
-  return sockets.map((s) => s.totem);
+  console.log(sockets.totem);
+
+  return sockets.map((s) => {
+    if (s.totem) {
+      return s.totem;
+    } else {
+      return {};
+    }
+  });
+});
+
+ipcMain.on("disconnect-totem", (event, data) => {
+  io.to(data.socket_id).emit("stop_streaming");
 });

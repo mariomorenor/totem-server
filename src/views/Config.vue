@@ -14,9 +14,9 @@
               >
                 <template v-if="webcams.length > 0">
                   <option
-                    v-for="webcam in webcams"
+                    v-for="(webcam, index) in webcams"
                     :value="webcam.deviceId"
-                    :key="webcam.id"
+                    :key="index"
                   >
                     {{ webcam.label }}
                   </option>
@@ -54,8 +54,8 @@
               </b-select>
             </b-field>
 
-            <video id="webcam_preview" muted></video>
-            <audio id="audio_preview"></audio>
+            <video id="webcam_preview" muted autoplay></video>
+            <audio id="audio_preview" autoplay></audio>
             <b-button @click="saveConfig()" type="is-success">Guardar</b-button>
           </div>
         </div>
@@ -69,6 +69,7 @@ const { BrowserWindow, dialog } = require("@electron/remote");
 const Store = require("electron-store");
 
 const storage = new Store();
+console.log(storage);
 export default {
   data() {
     return {
@@ -117,6 +118,7 @@ export default {
           let video = document.getElementById("webcam_preview");
           video.srcObject = stream;
           video.play();
+
         });
     },
     preview_audio() {
@@ -130,7 +132,10 @@ export default {
         .then((stream) => {
           let audio = document.getElementById("audio_preview");
           audio.srcObject = stream;
+
           audio.play();
+
+
         });
     },
     saveConfig() {
