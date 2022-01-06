@@ -9,7 +9,12 @@
       <div class="column is-6">
         <div class="is-flex is-justify-content-center">
           <video v-if="streaming" id="totem-cam"></video>
-          <img v-if="!streaming" id="img_no_streaming" src="../assets/logogs.jpg" alt="">
+          <img
+            v-if="!streaming"
+            id="img_no_streaming"
+            src="../assets/logogs.jpg"
+            alt=""
+          />
         </div>
       </div>
     </div>
@@ -57,9 +62,24 @@
               >Desconectar</b-button
             >
           </div>
+          <div
+            v-if="totem.lost_call"
+            class="is-flex is-justify-content-space-between"
+          >
+            <div></div>
+            <div>
+              <b-tag type="is-danger" icon="phone-slash"></b-tag>
+            </div>
+          </div>
         </div>
       </div>
     </div>
+    <audio id="notification">
+      <source type="audio/mp3" src="../assets/notification.mp3" />
+    </audio>
+    <audio id="notification_silent" loop>
+      <source type="audio/mp3" src="../assets/call_in_wait.mp3" />
+    </audio>
   </div>
 </template>
 
@@ -76,6 +96,7 @@ export default {
       totems: [],
       webcam: "",
       microphone: "",
+      eventCall: [],
     };
   },
   beforeMount() {
@@ -91,6 +112,7 @@ export default {
   },
   methods: {
     init() {
+      let self = this;
       this.webcam = storage.get("webcam_id");
       this.microphone = storage.get("microphone_id");
 
@@ -108,6 +130,31 @@ export default {
 
       ipcRenderer.on("remove-totem", (event, data) => {
         this.totems = this.totems.filter((t) => data.socket_id != t.socket_id);
+      });
+
+      ipcRenderer.on("calling", (event, data) => {
+        let notification_audio = document.getElementById("notification");
+        console.log(notification_audio);
+        if (this.streaming) {
+          notification_audio = document.getElementById("notification_silent");
+        }
+
+        notification_audio.play();
+
+        self.$buefy.toast.open({
+          duration: 5000,
+          message: `El Tótem ${data.nombre} está llamando`,
+          type: "is-danger",
+        });
+        self.eventCall.push(
+          setTimeout(() => {
+            self.totems.forEach((t) => {
+              if (t.socket_id == data.socket_id) {
+                t.lost_call = true;
+              }
+            });
+          }, 5000)
+        );
       });
     },
     videoName(video) {
@@ -130,6 +177,13 @@ export default {
     connectTotem(totem) {
       let self = this;
       totem.callInProgress = true;
+      totem.lost_call = false;
+      let notification_audio = document.getElementById("notification");
+      notification_audio.pause();
+      notification_audio.currentTime = 0;
+      for (let index = 0; index < this.eventCall.length; index++) {
+        clearTimeout(this.eventCall[index]);
+      }
       navigator.mediaDevices
         .getUserMedia({
           video: {
@@ -154,6 +208,9 @@ export default {
       ipcRenderer.send("disconnect-totem", { socket_id: totem.socket_id });
       totem.estado = "promocion";
       totem.callInProgress = false;
+      let beep = document.getElementById("notification_silent");
+      beep.pause();
+      beep.currentTime = 0;
     },
   },
 };
@@ -169,7 +226,8 @@ export default {
 }
 
 #webcam,
-#totem-cam,#img_no_streaming {
+#totem-cam,
+#img_no_streaming {
   width: 450px;
   height: 225px;
   object-fit: fill;

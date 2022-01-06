@@ -23,9 +23,10 @@ function createWindow(devPath, prodPath) {
     webPreferences: {
       // Use pluginOptions.nodeIntegration, leave this alone
       // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
-      nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
-      contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION,
+      nodeIntegration: true,
+      contextIsolation: false,
       enableRemoteModule: true,
+      webSecurity: false,
     },
   });
 
@@ -111,6 +112,10 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     console.log(`Socket Desconectado ${socket.id}`);
     win.webContents.send("remove-totem", { socket_id: socket.id });
+  });
+
+  socket.on("callServer", (data) => {
+    win.webContents.send("calling", data);
   });
 });
 
