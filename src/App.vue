@@ -7,7 +7,8 @@
         </div>
         <b-menu>
           <b-menu-list label="">
-            <b-menu-item label="Vista Principal"></b-menu-item>
+            <b-menu-item tag="router-link" :to="{name:'home'}" label="Vista Principal"></b-menu-item>
+            <b-menu-item tag="router-link" :to="{name:'config'}" label="Configuración"></b-menu-item>
           </b-menu-list>
         </b-menu>
       </div>

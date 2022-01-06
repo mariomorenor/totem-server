@@ -1,10 +1,13 @@
 "use strict";
 
-import { app, protocol, BrowserWindow } from "electron";
+import { app, protocol, BrowserWindow, ipcMain } from "electron";
 import { createProtocol } from "vue-cli-plugin-electron-builder/lib";
 import installExtension, { VUEJS_DEVTOOLS } from "electron-devtools-installer";
 const isDevelopment = process.env.NODE_ENV !== "production";
+require("@electron/remote/main").initialize();
+const Store = require("electron-store");
 
+Store.initRenderer();
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([
   { scheme: "app", privileges: { secure: true, standard: true } },
@@ -15,13 +18,14 @@ let win = null;
 function createWindow(devPath, prodPath) {
   // Create the browser window.
   win = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 1200,
+    height: 800,
     webPreferences: {
       // Use pluginOptions.nodeIntegration, leave this alone
       // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
       nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
       contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION,
+      enableRemoteModule: true,
     },
   });
 
@@ -69,7 +73,7 @@ app.on("ready", async () => {
       console.error("Vue Devtools failed to install:", e.toString());
     }
   }
-  win = createWindow();
+  win = createWindow("", "index.html");
 });
 
 // Exit cleanly on request from parent process in development mode.
@@ -86,3 +90,32 @@ if (isDevelopment) {
     });
   }
 }
+
+const { Server } = require("socket.io");
+
+const io = new Server(5050, {
+  allowEIO3: true,
+  cors: {
+    origin: "*",
+  },
+});
+
+io.on("connection", (socket) => {
+  console.log(socket.id);
+
+  socket.on("nuevo-totem", (data) => {
+    socket.totem = data;
+    console.log(data);
+    win.webContents.send("nuevo-totem", socket.totem);
+  });
+
+  socket.on("disconnect", () => {
+    console.log(`Socket Desconectado ${socket.id}`);
+    win.webContents.send("remove-totem", { socket_id: socket.id });
+  });
+});
+
+ipcMain.handle("get-sockets", async () => {
+  let sockets = await io.fetchSockets();
+  return sockets.map((s) => s.totem);
+});
