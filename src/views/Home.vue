@@ -61,6 +61,7 @@
               v-if="totem.estado == 'directo'"
               >Desconectar</b-button
             >
+            <b-button icon-left="sync" class="ml-2" @click="reloadTotem(totem)" size="is-small" type="is-info is-light"></b-button>
           </div>
           <div
             v-if="totem.lost_call"
@@ -178,9 +179,7 @@ export default {
       let self = this;
       totem.callInProgress = true;
       totem.lost_call = false;
-      let notification_audio = document.getElementById("notification");
-      notification_audio.pause();
-      notification_audio.currentTime = 0;
+      this.stopSounds();
       for (let index = 0; index < this.eventCall.length; index++) {
         clearTimeout(this.eventCall[index]);
       }
@@ -212,6 +211,18 @@ export default {
       beep.pause();
       beep.currentTime = 0;
     },
+    stopSounds(){
+      let notification_audio = document.getElementById("notification");
+      let notification_audio_silent = document.getElementById("notification_silent");
+      notification_audio.pause();
+      notification_audio_silent.pause();
+      notification_audio.currentTime = 0;
+      notification_audio_silent.currentTime = 0;
+    },
+    reloadTotem(totem){
+      this.stopSounds();
+      ipcRenderer.send("reload-totem",totem)
+    }
   },
 };
 </script>

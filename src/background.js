@@ -135,3 +135,7 @@ ipcMain.handle("get-sockets", async () => {
 ipcMain.on("disconnect-totem", (event, data) => {
   io.to(data.socket_id).emit("stop_streaming");
 });
+
+ipcMain.on("reload-totem",(event,data)=>{
+  io.to(data.socket_id).emit("reloadTotem")
+})

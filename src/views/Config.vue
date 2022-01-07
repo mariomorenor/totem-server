@@ -30,7 +30,6 @@
             </b-field>
             <b-field label="Micrófono" label-position="on-border">
               <b-select
-                @change.native="preview_audio()"
                 required
                 v-model="microphone_selected"
                 placeholder="Seleccione el micrófono"
@@ -53,9 +52,11 @@
                 </template>
               </b-select>
             </b-field>
+              <b-button type="is-primary" v-if="!mic_status" @click="preview_audio(), mic_status = true "  size="is-small" icon-left="volume-up"></b-button>
+              <b-button type="is-warning" @click="stop_preview_audio()" v-else  size="is-small" icon-left="volume-mute"></b-button>
 
             <video id="webcam_preview" muted autoplay></video>
-            <audio id="audio_preview" autoplay></audio>
+            <audio id="audio_preview"></audio>
             <b-button @click="saveConfig()" type="is-success">Guardar</b-button>
           </div>
         </div>
@@ -77,6 +78,7 @@ export default {
       microphones: [],
       webcam_selected: "",
       microphone_selected: "",
+      mic_status:false
     };
   },
   mounted() {
@@ -89,8 +91,7 @@ export default {
       this.webcams = [];
       this.microphones = [];
       this.getDevices();
-      this.preview_webcam(this.webcam_selected);
-      this.preview_audio(this.microphone_selected);
+      this.preview_webcam();
     },
     getDevices() {
       let self = this;
@@ -132,11 +133,13 @@ export default {
         .then((stream) => {
           let audio = document.getElementById("audio_preview");
           audio.srcObject = stream;
-
           audio.play();
-
-
         });
+    },
+    stop_preview_audio(){
+      this.mic_status = false;
+       let audio = document.getElementById("audio_preview");
+          audio.pause();
     },
     saveConfig() {
       dialog
