@@ -32,7 +32,7 @@
       </div>
     </div>
     <div class="totems-list px-2">
-      <div class="is-flex is-justify-content-center">
+      <div class="is-flex is-flex-wrap-nowrap is-justify-content-center">
         <div class="card mx-2" v-for="totem in totems" :key="totem.id">
           <div class="card-header">
             <p class="p-3 totem-name">{{ totem.nombre }}</p>
