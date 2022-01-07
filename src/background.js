@@ -8,6 +8,13 @@ require("@electron/remote/main").initialize();
 const Store = require("electron-store");
 
 Store.initRenderer();
+
+// Auto Update
+
+require('update-electron-app')({
+  repo:"https://github.com/mariomorenor/totem-server.git"
+})
+
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([
   { scheme: "app", privileges: { secure: true, standard: true } },
@@ -139,5 +146,3 @@ ipcMain.on("disconnect-totem", (event, data) => {
 ipcMain.on("reload-totem",(event,data)=>{
   io.to(data.socket_id).emit("reloadTotem")
 })
-
-// AUTO UPDATE

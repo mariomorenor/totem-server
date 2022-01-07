@@ -10,8 +10,6 @@ import { library } from "@fortawesome/fontawesome-svg-core";
 import { fas } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
-import VuePeerJS from "vue-peerjs";
-import Peer from 'peerjs';
 
 library.add(fas);
 
@@ -21,7 +19,7 @@ Vue.use(Buefy, {
   defaultIconPack: "fas",
   defaultIconComponent: "fa",
 });
-Vue.use(VuePeerJS, new Peer({}));
+
 new Vue({
   router,
   store,
