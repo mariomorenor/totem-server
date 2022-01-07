@@ -3,7 +3,20 @@
     <div class="columns">
       <div class="column is-6">
         <div class="is-flex is-justify-content-center">
-          <video id="webcam"></video>
+                      <div class="cam_preview">
+              <video
+                id="webcam"
+                :class="{
+                  top: cam_orientation == 0 || cam_orientation == 360,
+                  right: cam_orientation == 90,
+                  bottom: cam_orientation == 180,
+                  left: cam_orientation == 270,
+                }"
+                muted
+                autoplay
+              ></video>
+            </div>
+          <!-- <video id="webcam"></video> -->
         </div>
       </div>
       <div class="column is-6">
@@ -98,6 +111,7 @@ export default {
       webcam: "",
       microphone: "",
       eventCall: [],
+      cam_orientation:0
     };
   },
   beforeMount() {
@@ -114,6 +128,7 @@ export default {
   methods: {
     init() {
       let self = this;
+      this.cam_orientation = storage.get("cam_orientation")
       this.webcam = storage.get("webcam_id");
       this.microphone = storage.get("microphone_id");
 
@@ -236,11 +251,49 @@ export default {
   text-overflow: ellipsis;
 }
 
-#webcam,
 #totem-cam,
 #img_no_streaming {
   width: 450px;
   height: 225px;
   object-fit: fill;
+}
+
+$width_cam: 450px;
+$height_cam: 225px;
+
+.cam_preview {
+  width: $width_cam;
+  height: $height_cam;
+  & #webcam.top {
+    transform: rotate(360deg);
+    
+  }
+  & #webcam.right {
+    width: $height_cam;
+    height: $width_cam;
+
+    transform: rotate(90deg);
+
+    transform-origin: bottom left;
+
+    margin-top: -100vw;
+    object-fit: fill;
+  }
+  & #webcam.bottom {
+    transform: rotate(180deg);
+  }
+
+  & #webcam.left {
+    transform: rotate(270deg);
+    width: $height_cam;
+    height: $width_cam;
+
+    transform-origin: bottom right;
+
+    margin-top: -100vw;
+    margin-left: 25%;
+
+    object-fit: fill;
+  }
 }
 </style>

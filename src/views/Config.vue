@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container config">
     <div class="columns">
       <div class="column is-half is-offset-one-quarter">
         <div class="card">
@@ -52,10 +52,54 @@
                 </template>
               </b-select>
             </b-field>
-              <b-button type="is-primary" v-if="!mic_status" @click="preview_audio(), mic_status = true "  size="is-small" icon-left="volume-up"></b-button>
-              <b-button type="is-warning" @click="stop_preview_audio()" v-else  size="is-small" icon-left="volume-mute"></b-button>
-
-            <video id="webcam_preview" muted autoplay></video>
+            <b-tooltip
+              v-if="!mic_status"
+              position="is-top"
+              label="Iniciar prueba de audio"
+              type="is-dark"
+            >
+              <b-button
+                type="is-primary"
+                @click="preview_audio(), (mic_status = true)"
+                size="is-small"
+                icon-left="volume-up"
+              ></b-button>
+            </b-tooltip>
+            <b-tooltip
+              type="is-dark"
+              v-else
+              position="is-top"
+              label="Detener Prueba de audio"
+            >
+              <b-button
+                type="is-warning"
+                @click="stop_preview_audio()"
+                size="is-small"
+                icon-left="volume-mute"
+              ></b-button>
+            </b-tooltip>
+            <b-tooltip type="is-dark" label="Girar la cámara" position="is-top">
+              <b-button
+                @click="rotateCam()"
+                class="ml-3"
+                icon-left="redo"
+                type="is-info is-light"
+                size="is-small"
+              ></b-button>
+            </b-tooltip>
+            <div class="cam_preview">
+              <video
+                id="webcam_preview"
+                :class="{
+                  top: cam_orientation == 0 || cam_orientation == 360,
+                  right: cam_orientation == 90,
+                  bottom: cam_orientation == 180,
+                  left: cam_orientation == 270,
+                }"
+                muted
+                autoplay
+              ></video>
+            </div>
             <audio id="audio_preview"></audio>
             <b-button @click="saveConfig()" type="is-success">Guardar</b-button>
           </div>
@@ -70,7 +114,6 @@ const { BrowserWindow, dialog } = require("@electron/remote");
 const Store = require("electron-store");
 
 const storage = new Store();
-console.log(storage);
 export default {
   data() {
     return {
@@ -78,7 +121,8 @@ export default {
       microphones: [],
       webcam_selected: "",
       microphone_selected: "",
-      mic_status:false
+      mic_status: false,
+      cam_orientation: 0,
     };
   },
   mounted() {
@@ -86,6 +130,9 @@ export default {
   },
   methods: {
     init() {
+      this.cam_orientation = storage.get("cam_orientation")
+        ? storage.get("cam_orientation")
+        : 0;
       this.webcam_selected = storage.get("webcam_id");
       this.microphone_selected = storage.get("microphone_id");
       this.webcams = [];
@@ -119,7 +166,6 @@ export default {
           let video = document.getElementById("webcam_preview");
           video.srcObject = stream;
           video.play();
-
         });
     },
     preview_audio() {
@@ -136,10 +182,10 @@ export default {
           audio.play();
         });
     },
-    stop_preview_audio(){
+    stop_preview_audio() {
       this.mic_status = false;
-       let audio = document.getElementById("audio_preview");
-          audio.pause();
+      let audio = document.getElementById("audio_preview");
+      audio.pause();
     },
     saveConfig() {
       dialog
@@ -154,9 +200,60 @@ export default {
           if (val.response == 0) {
             storage.set("webcam_id", this.webcam_selected);
             storage.set("microphone_id", this.microphone_selected);
+
+            storage.set("cam_orientation", this.cam_orientation);
           }
         });
+    },
+    rotateCam() {
+      if (this.cam_orientation > 270) {
+        this.cam_orientation = 0;
+      }
+      this.cam_orientation += 90;
     },
   },
 };
 </script>
+
+<style lang="scss" scoped>
+.config {
+  user-select: none;
+}
+
+$width_cam: 600px;
+$height_cam: 450px;
+.cam_preview {
+  width: $width_cam;
+  height: $height_cam;
+  & #webcam_preview.top {
+    transform: rotate(360deg);
+  }
+  & #webcam_preview.right {
+    width: $height_cam;
+    height: $width_cam;
+
+    transform: rotate(90deg);
+
+    transform-origin: bottom left;
+
+    margin-top: -100vw;
+    object-fit: cover;
+  }
+  & #webcam_preview.bottom {
+    transform: rotate(180deg);
+  }
+
+  & #webcam_preview.left {
+    transform: rotate(270deg);
+    width: $height_cam;
+    height: $width_cam;
+
+    transform-origin: bottom right;
+
+    margin-top: -100vw;
+    margin-left: 25%;
+
+    object-fit: cover;
+  }
+}
+</style>
