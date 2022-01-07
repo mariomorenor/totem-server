@@ -152,11 +152,11 @@ const dispatch = (data) => {
 }
 
 autoUpdater.on('checking-for-update', () => {
-  dispatch('Checking for update...')
+  dispatch({msg:'Checking for update...',status:0})
 })
 
 autoUpdater.on('update-available', (info) => {
-  dispatch('Update available.')
+  dispatch({msg:'Update available.',status:1})
 })
 
 autoUpdater.on('update-not-available', (info) => {
@@ -172,5 +172,5 @@ autoUpdater.on('download-progress', (progressObj) => {
 })
 
 autoUpdater.on('update-downloaded', (info) => {
-  dispatch('Update downloaded')
+  dispatch({msg:'Update downloaded',state:2})
 })

@@ -22,12 +22,10 @@
       <div class="column is-6">
         <div class="is-flex is-justify-content-center">
           <video v-if="streaming" id="totem-cam"></video>
-          <video
+          <img
             v-if="!streaming"
             id="img_no_streaming"
             src="../assets/logogs.jpg"
-            autoplay
-            muted
             alt=""
           />
         </div>
