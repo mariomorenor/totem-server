@@ -25,7 +25,7 @@
           <video
             v-if="!streaming"
             id="img_no_streaming"
-            src="../assets/video.mp4"
+            src="../assets/logogs.jpg"
             autoplay
             muted
             alt=""
