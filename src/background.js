@@ -139,3 +139,5 @@ ipcMain.on("disconnect-totem", (event, data) => {
 ipcMain.on("reload-totem",(event,data)=>{
   io.to(data.socket_id).emit("reloadTotem")
 })
+
+// AUTO UPDATE
