@@ -25,7 +25,7 @@
           <img
             v-if="!streaming"
             id="img_no_streaming"
-            src="../assets/logogs.jpg"
+            src="../assets/wait-no.gif"
             alt=""
           />
         </div>
@@ -102,6 +102,8 @@ import { ipcRenderer } from "electron";
 const Store = require("electron-store");
 const storage = new Store();
 const path = require("path");
+/* eslint-disable no-undef */
+var peerJS = new Peer();
 export default {
   name: "Home",
   components: {},
@@ -150,7 +152,6 @@ export default {
 
       ipcRenderer.on("calling", (event, data) => {
         let notification_audio = document.getElementById("notification");
-        console.log(notification_audio);
         if (this.streaming) {
           notification_audio = document.getElementById("notification_silent");
         }
@@ -208,7 +209,7 @@ export default {
           },
         })
         .then((stream) => {
-          let call = self.$peer.call(totem.peer_id, stream);
+          let call = peerJS.call(totem.peer_id, stream);
           call.on("stream", (remoteStream) => {
             let remoteVideo = document.getElementById("totem-cam");
             remoteVideo.srcObject = remoteStream;
