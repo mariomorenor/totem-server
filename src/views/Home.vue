@@ -3,19 +3,19 @@
     <div class="columns">
       <div class="column is-6">
         <div class="is-flex is-justify-content-center">
-                      <div class="cam_preview">
-              <video
-                id="webcam"
-                :class="{
-                  top: cam_orientation == 0 || cam_orientation == 360,
-                  right: cam_orientation == 90,
-                  bottom: cam_orientation == 180,
-                  left: cam_orientation == 270,
-                }"
-                muted
-                autoplay
-              ></video>
-            </div>
+          <div class="cam_preview">
+            <video
+              id="webcam"
+              :class="{
+                top: cam_orientation == 0 || cam_orientation == 360,
+                right: cam_orientation == 90,
+                bottom: cam_orientation == 180,
+                left: cam_orientation == 270,
+              }"
+              muted
+              autoplay
+            ></video>
+          </div>
           <!-- <video id="webcam"></video> -->
         </div>
       </div>
@@ -32,8 +32,8 @@
       </div>
     </div>
     <div class="totems-list px-2">
-      <div class="is-flex is-flex-wrap-nowrap is-justify-content-center">
-        <div class="card mx-2" v-for="totem in totems" :key="totem.id">
+      <div class="is-flex is-flex-wrap-wrap is-justify-content-center">
+        <div class="card mx-2 my-1" v-for="totem in totems" :key="totem.id">
           <div class="card-header">
             <p class="p-3 totem-name">{{ totem.nombre }}</p>
             <div class="p-3">
@@ -74,7 +74,13 @@
               v-if="totem.estado == 'directo'"
               >Desconectar</b-button
             >
-            <b-button icon-left="sync" class="ml-2" @click="reloadTotem(totem)" size="is-small" type="is-info is-light"></b-button>
+            <b-button
+              icon-left="sync"
+              class="ml-2"
+              @click="reloadTotem(totem)"
+              size="is-small"
+              type="is-info is-light"
+            ></b-button>
           </div>
           <div
             v-if="totem.lost_call"
@@ -113,7 +119,7 @@ export default {
       webcam: "",
       microphone: "",
       eventCall: [],
-      cam_orientation:0
+      cam_orientation: 0,
     };
   },
   beforeMount() {
@@ -130,7 +136,7 @@ export default {
   methods: {
     init() {
       let self = this;
-      this.cam_orientation = storage.get("cam_orientation")
+      this.cam_orientation = storage.get("cam_orientation");
       this.webcam = storage.get("webcam_id");
       this.microphone = storage.get("microphone_id");
 
@@ -199,6 +205,7 @@ export default {
       for (let index = 0; index < this.eventCall.length; index++) {
         clearTimeout(this.eventCall[index]);
       }
+      this.eventCall = [];
       navigator.mediaDevices
         .getUserMedia({
           video: {
@@ -227,18 +234,20 @@ export default {
       beep.pause();
       beep.currentTime = 0;
     },
-    stopSounds(){
+    stopSounds() {
       let notification_audio = document.getElementById("notification");
-      let notification_audio_silent = document.getElementById("notification_silent");
+      let notification_audio_silent = document.getElementById(
+        "notification_silent"
+      );
       notification_audio.pause();
       notification_audio_silent.pause();
       notification_audio.currentTime = 0;
       notification_audio_silent.currentTime = 0;
     },
-    reloadTotem(totem){
+    reloadTotem(totem) {
       this.stopSounds();
-      ipcRenderer.send("reload-totem",totem)
-    }
+      ipcRenderer.send("reload-totem", totem);
+    },
   },
 };
 </script>
@@ -267,7 +276,8 @@ $height_cam: 225px;
   height: $height_cam;
   & #webcam.top {
     transform: rotate(360deg);
-    
+    width: $width_cam;
+    height: $height_cam;
   }
   & #webcam.right {
     width: $height_cam;
@@ -282,6 +292,8 @@ $height_cam: 225px;
   }
   & #webcam.bottom {
     transform: rotate(180deg);
+        width: $width_cam;
+    height: $height_cam;
   }
 
   & #webcam.left {
@@ -295,6 +307,7 @@ $height_cam: 225px;
     margin-left: 25%;
 
     object-fit: fill;
+    
   }
 }
 </style>
