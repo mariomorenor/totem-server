@@ -25,7 +25,7 @@
           <img
             v-if="!streaming"
             id="img_no_streaming"
-            src="../assets/logogs.jpg"
+            src="../assets/espera.gif"
             alt=""
           />
         </div>
