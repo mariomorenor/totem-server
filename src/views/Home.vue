@@ -136,7 +136,9 @@ export default {
   methods: {
     init() {
       let self = this;
-      this.cam_orientation = storage.get("cam_orientation");
+      this.cam_orientation = storage.get("cam_orientation")
+        ? storage.get("cam_orientation")
+        : 0;
       this.webcam = storage.get("webcam_id");
       this.microphone = storage.get("microphone_id");
 
@@ -278,6 +280,8 @@ $height_cam: 225px;
     transform: rotate(360deg);
     width: $width_cam;
     height: $height_cam;
+
+    object-fit: fill;
   }
   & #webcam.right {
     width: $height_cam;
@@ -292,7 +296,7 @@ $height_cam: 225px;
   }
   & #webcam.bottom {
     transform: rotate(180deg);
-        width: $width_cam;
+    width: $width_cam;
     height: $height_cam;
   }
 
@@ -307,7 +311,6 @@ $height_cam: 225px;
     margin-left: 25%;
 
     object-fit: fill;
-    
   }
 }
 </style>
