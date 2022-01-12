@@ -110,10 +110,10 @@ const storage = new Store();
 const path = require("path");
 /* eslint-disable no-undef */
 var peerJS = new Peer();
+const {app} = require("@electron/remote")
+var sound = new Audio( app.getPath("music")+"/notification.mp3");
 
-var sound = new Audio("./notification.mp3");
-
-var sound_silent = new Audio("./call_in_wait.mp3");
+var sound_silent = new Audio( app.getPath("music")+"/call_in_wait.mp3");
 
 export default {
   name: "Home",
