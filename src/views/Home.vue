@@ -94,12 +94,12 @@
         </div>
       </div>
     </div>
-    <audio id="notification">
+    <!-- <audio id="notification">
       <source type="audio/mp3" src="../assets/notification.mp3" />
-    </audio>
-    <audio id="notification_silent" loop>
+    </audio> -->
+    <!-- <audio id="notification_silent" loop>
       <source type="audio/mp3" src="../assets/call_in_wait.mp3" />
-    </audio>
+    </audio> -->
   </div>
 </template>
 
@@ -110,6 +110,11 @@ const storage = new Store();
 const path = require("path");
 /* eslint-disable no-undef */
 var peerJS = new Peer();
+
+var sound = new Audio("./notification.mp3");
+
+var sound_silent = new Audio("./call_in_wait.mp3");
+
 export default {
   name: "Home",
   components: {},
@@ -120,6 +125,8 @@ export default {
       microphone: "",
       eventCall: [],
       cam_orientation: 0,
+      sound: new Audio("./notification.mp3"),
+      sound_silent: new Audio("./call_in_wait.mp3"),
     };
   },
   beforeMount() {
@@ -159,18 +166,23 @@ export default {
       });
 
       ipcRenderer.on("calling", (event, data) => {
-        let notification_audio = document.getElementById("notification");
-        if (this.streaming) {
-          notification_audio = document.getElementById("notification_silent");
+        if (!self.streaming) {
+          if (sound.paused) {
+            sound.play();
+          }
+        } else {
+          if (sound_silent.paused) {
+            sound_silent.play();
+          }
         }
-
-        notification_audio.play();
 
         self.$buefy.toast.open({
           duration: 5000,
           message: `El Tótem ${data.nombre} está llamando`,
           type: "is-danger",
+          queue: true,
         });
+
         self.eventCall.push(
           setTimeout(() => {
             self.totems.forEach((t) => {
@@ -192,6 +204,7 @@ export default {
           video: {
             deviceId: self.webcam,
           },
+          audio: false,
         })
         .then((stream) => {
           let video = document.getElementById("webcam");

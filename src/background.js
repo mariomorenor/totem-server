@@ -128,15 +128,16 @@ io.on("connection", (socket) => {
 
 ipcMain.handle("get-sockets", async () => {
   let sockets = await io.fetchSockets();
-  console.log(sockets.totem);
-
-  return sockets.map((s) => {
+  
+  let g =sockets.map((s) => {
     if (s.totem) {
       return s.totem;
     } else {
       return {};
     }
   });
+  
+  return g
 });
 
 ipcMain.on("disconnect-totem", (event, data) => {
