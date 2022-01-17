@@ -257,14 +257,14 @@ export default {
       beep.currentTime = 0;
     },
     stopSounds() {
-      let notification_audio = document.getElementById("notification");
-      let notification_audio_silent = document.getElementById(
-        "notification_silent"
-      );
-      notification_audio.pause();
-      notification_audio_silent.pause();
-      notification_audio.currentTime = 0;
-      notification_audio_silent.currentTime = 0;
+      // let notification_audio = document.getElementById("notification");
+      // let notification_audio_silent = document.getElementById(
+      //   "notification_silent"
+      // );
+      // notification_audio.pause();
+      // notification_audio_silent.pause();
+      // notification_audio.currentTime = 0;
+      // notification_audio_silent.currentTime = 0;
     },
     reloadTotem(totem) {
       this.stopSounds();
