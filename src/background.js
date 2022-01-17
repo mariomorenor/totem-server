@@ -148,6 +148,10 @@ ipcMain.on("reload-totem",(event,data)=>{
   io.to(data.socket_id).emit("reloadTotem")
 })
 
+ipcMain.on("set-volume",(event,data)=>{
+  io.to(data.socket_id).emit("changeVolume",data.volume)
+})
+
 const dispatch = (data) => {
   win.webContents.send('win-message', data)
 }

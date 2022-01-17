@@ -81,6 +81,13 @@
               size="is-small"
               type="is-info is-light"
             ></b-button>
+            <b-field label="Tooltip type">
+              <b-slider
+              @change="setVolume(totem)"
+                v-model="totem.volume"
+                tooltip-type="is-success"
+              ></b-slider>
+            </b-field>
           </div>
           <div
             v-if="totem.lost_call"
@@ -110,10 +117,10 @@ const storage = new Store();
 const path = require("path");
 /* eslint-disable no-undef */
 var peerJS = new Peer();
-const {app} = require("@electron/remote")
-var sound = new Audio( app.getPath("music")+"/notification.mp3");
+const { app } = require("@electron/remote");
+var sound = new Audio(app.getPath("music") + "/notification.mp3");
 
-var sound_silent = new Audio( app.getPath("music")+"/call_in_wait.mp3");
+var sound_silent = new Audio(app.getPath("music") + "/call_in_wait.mp3");
 
 export default {
   name: "Home",
@@ -263,6 +270,9 @@ export default {
       this.stopSounds();
       ipcRenderer.send("reload-totem", totem);
     },
+    setVolume(totem){
+      ipcRenderer.send("set-volume",totem)
+    }
   },
 };
 </script>
