@@ -81,11 +81,11 @@
               size="is-small"
               type="is-info is-light"
             ></b-button>
-            <b-field label="Tooltip type">
+            <b-field label="Volumen" >
               <b-slider
               @change="setVolume(totem)"
                 v-model="totem.volume"
-                tooltip-type="is-success"
+                tooltip-type="is-info"
               ></b-slider>
             </b-field>
           </div>
