@@ -11,9 +11,7 @@ Store.initRenderer();
 
 // Auto Update
 
-require('update-electron-app')({
-  repo:"https://github.com/mariomorenor/totem-server.git"
-})
+const { autoUpdater } = require("electron-updater")
 
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([
@@ -82,6 +80,8 @@ app.on("ready", async () => {
     }
   }
   win = createWindow("", "index.html");
+
+  autoUpdater.checkForUpdatesAndNotify()
 });
 
 // Exit cleanly on request from parent process in development mode.
@@ -128,15 +128,16 @@ io.on("connection", (socket) => {
 
 ipcMain.handle("get-sockets", async () => {
   let sockets = await io.fetchSockets();
-  console.log(sockets.totem);
-
-  return sockets.map((s) => {
+  
+  let g =sockets.map((s) => {
     if (s.totem) {
       return s.totem;
     } else {
       return {};
     }
   });
+  
+  return g
 });
 
 ipcMain.on("disconnect-totem", (event, data) => {
@@ -145,4 +146,36 @@ ipcMain.on("disconnect-totem", (event, data) => {
 
 ipcMain.on("reload-totem",(event,data)=>{
   io.to(data.socket_id).emit("reloadTotem")
+})
+
+ipcMain.on("set-volume",(event,data)=>{
+  io.to(data.socket_id).emit("changeVolume",data.volume)
+})
+
+const dispatch = (data) => {
+  win.webContents.send('win-message', data)
+}
+
+autoUpdater.on('checking-for-update', () => {
+  dispatch({msg:'Checking for update...',status:0})
+})
+
+autoUpdater.on('update-available', (info) => {
+  dispatch({msg:'Update available.',status:1})
+})
+
+autoUpdater.on('update-not-available', (info) => {
+  dispatch('Update not available.')
+})
+
+autoUpdater.on('error', (err) => {
+  dispatch('Error in auto-updater. ' + err)
+})
+
+autoUpdater.on('download-progress', (progressObj) => {
+    win.webContents.send('download-progress', progressObj.percent)
+})
+
+autoUpdater.on('update-downloaded', (info) => {
+  dispatch({msg:'Update downloaded',state:2})
 })

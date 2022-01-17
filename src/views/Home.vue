@@ -3,19 +3,19 @@
     <div class="columns">
       <div class="column is-6">
         <div class="is-flex is-justify-content-center">
-                      <div class="cam_preview">
-              <video
-                id="webcam"
-                :class="{
-                  top: cam_orientation == 0 || cam_orientation == 360,
-                  right: cam_orientation == 90,
-                  bottom: cam_orientation == 180,
-                  left: cam_orientation == 270,
-                }"
-                muted
-                autoplay
-              ></video>
-            </div>
+          <div class="cam_preview">
+            <video
+              id="webcam"
+              :class="{
+                top: cam_orientation == 0 || cam_orientation == 360,
+                right: cam_orientation == 90,
+                bottom: cam_orientation == 180,
+                left: cam_orientation == 270,
+              }"
+              muted
+              autoplay
+            ></video>
+          </div>
           <!-- <video id="webcam"></video> -->
         </div>
       </div>
@@ -25,15 +25,15 @@
           <img
             v-if="!streaming"
             id="img_no_streaming"
-            src="../assets/wait-no.gif"
+            src="../assets/espera.gif"
             alt=""
           />
         </div>
       </div>
     </div>
     <div class="totems-list px-2">
-      <div class="is-flex is-justify-content-center">
-        <div class="card mx-2" v-for="totem in totems" :key="totem.id">
+      <div class="is-flex is-flex-wrap-wrap is-justify-content-center">
+        <div class="card mx-2 my-1" v-for="totem in totems" :key="totem.id">
           <div class="card-header">
             <p class="p-3 totem-name">{{ totem.nombre }}</p>
             <div class="p-3">
@@ -74,7 +74,20 @@
               v-if="totem.estado == 'directo'"
               >Desconectar</b-button
             >
-            <b-button icon-left="sync" class="ml-2" @click="reloadTotem(totem)" size="is-small" type="is-info is-light"></b-button>
+            <b-button
+              icon-left="sync"
+              class="ml-2"
+              @click="reloadTotem(totem)"
+              size="is-small"
+              type="is-info is-light"
+            ></b-button>
+            <b-field label="Volumen" >
+              <b-slider
+              @change="setVolume(totem)"
+                v-model="totem.volume"
+                tooltip-type="is-info"
+              ></b-slider>
+            </b-field>
           </div>
           <div
             v-if="totem.lost_call"
@@ -88,12 +101,12 @@
         </div>
       </div>
     </div>
-    <audio id="notification">
+    <!-- <audio id="notification">
       <source type="audio/mp3" src="../assets/notification.mp3" />
-    </audio>
-    <audio id="notification_silent" loop>
+    </audio> -->
+    <!-- <audio id="notification_silent" loop>
       <source type="audio/mp3" src="../assets/call_in_wait.mp3" />
-    </audio>
+    </audio> -->
   </div>
 </template>
 
@@ -104,6 +117,11 @@ const storage = new Store();
 const path = require("path");
 /* eslint-disable no-undef */
 var peerJS = new Peer();
+const { app } = require("@electron/remote");
+var sound = new Audio(app.getPath("music") + "/notification.mp3");
+
+var sound_silent = new Audio(app.getPath("music") + "/call_in_wait.mp3");
+
 export default {
   name: "Home",
   components: {},
@@ -113,7 +131,9 @@ export default {
       webcam: "",
       microphone: "",
       eventCall: [],
-      cam_orientation:0
+      cam_orientation: 0,
+      sound: new Audio("./notification.mp3"),
+      sound_silent: new Audio("./call_in_wait.mp3"),
     };
   },
   beforeMount() {
@@ -131,6 +151,8 @@ export default {
     init() {
       let self = this;
       this.cam_orientation = storage.get("cam_orientation")
+        ? storage.get("cam_orientation")
+        : 0;
       this.webcam = storage.get("webcam_id");
       this.microphone = storage.get("microphone_id");
 
@@ -151,18 +173,23 @@ export default {
       });
 
       ipcRenderer.on("calling", (event, data) => {
-        let notification_audio = document.getElementById("notification");
-        if (this.streaming) {
-          notification_audio = document.getElementById("notification_silent");
+        if (!self.streaming) {
+          if (sound.paused) {
+            sound.play();
+          }
+        } else {
+          if (sound_silent.paused) {
+            sound_silent.play();
+          }
         }
-
-        notification_audio.play();
 
         self.$buefy.toast.open({
           duration: 5000,
           message: `El Tótem ${data.nombre} está llamando`,
           type: "is-danger",
+          queue: true,
         });
+
         self.eventCall.push(
           setTimeout(() => {
             self.totems.forEach((t) => {
@@ -184,6 +211,7 @@ export default {
           video: {
             deviceId: self.webcam,
           },
+          audio: false,
         })
         .then((stream) => {
           let video = document.getElementById("webcam");
@@ -199,6 +227,7 @@ export default {
       for (let index = 0; index < this.eventCall.length; index++) {
         clearTimeout(this.eventCall[index]);
       }
+      this.eventCall = [];
       navigator.mediaDevices
         .getUserMedia({
           video: {
@@ -227,17 +256,22 @@ export default {
       beep.pause();
       beep.currentTime = 0;
     },
-    stopSounds(){
-      let notification_audio = document.getElementById("notification");
-      let notification_audio_silent = document.getElementById("notification_silent");
-      notification_audio.pause();
-      notification_audio_silent.pause();
-      notification_audio.currentTime = 0;
-      notification_audio_silent.currentTime = 0;
+    stopSounds() {
+      // let notification_audio = document.getElementById("notification");
+      // let notification_audio_silent = document.getElementById(
+      //   "notification_silent"
+      // );
+      // notification_audio.pause();
+      // notification_audio_silent.pause();
+      // notification_audio.currentTime = 0;
+      // notification_audio_silent.currentTime = 0;
     },
-    reloadTotem(totem){
+    reloadTotem(totem) {
       this.stopSounds();
-      ipcRenderer.send("reload-totem",totem)
+      ipcRenderer.send("reload-totem", totem);
+    },
+    setVolume(totem){
+      ipcRenderer.send("set-volume",totem)
     }
   },
 };
@@ -267,7 +301,10 @@ $height_cam: 225px;
   height: $height_cam;
   & #webcam.top {
     transform: rotate(360deg);
-    
+    width: $width_cam;
+    height: $height_cam;
+
+    object-fit: fill;
   }
   & #webcam.right {
     width: $height_cam;
@@ -282,6 +319,8 @@ $height_cam: 225px;
   }
   & #webcam.bottom {
     transform: rotate(180deg);
+    width: $width_cam;
+    height: $height_cam;
   }
 
   & #webcam.left {
