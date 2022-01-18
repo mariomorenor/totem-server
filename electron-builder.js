@@ -5,7 +5,8 @@
 module.exports = {
     "appId": "com.jmoreno.totemserver",
     "win": {
-        "target": "nsis"
+        "target": "nsis",
+        "icon":"build/icons/icon.png"
     },
     "publish": ["github"]
 }
