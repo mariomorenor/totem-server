@@ -10,14 +10,16 @@
     "electron:serve": "vue-cli-service electron:serve",
     "postinstall": "electron-builder install-app-deps",
     "postuninstall": "electron-builder install-app-deps",
-    "release":"electron-builder"
+    "release": "electron-builder"
   },
   "main": "background.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mariomorenor/totem-server.git"
   },
-  "author": {"name": "Jonathan Moreno"},
+  "author": {
+    "name": "Jonathan Moreno"
+  },
   "description": "Totem Server",
   "dependencies": {
     "@electron/remote": "^2.0.1",
@@ -50,6 +52,7 @@
     "sass": "^1.45.2",
     "sass-loader": "^10.2.0",
     "vue-cli-plugin-electron-builder": "~2.1.1",
+    "vue-styleguidist": "^4.43.3",
     "vue-template-compiler": "^2.6.11"
   },
   "eslintConfig": {
