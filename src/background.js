@@ -3,6 +3,7 @@
 import { app, protocol, BrowserWindow, ipcMain } from "electron";
 import { createProtocol } from "vue-cli-plugin-electron-builder/lib";
 import installExtension, { VUEJS_DEVTOOLS } from "electron-devtools-installer";
+import path from "path";
 const isDevelopment = process.env.NODE_ENV !== "production";
 require("@electron/remote/main").initialize();
 const Store = require("electron-store");
@@ -11,7 +12,7 @@ Store.initRenderer();
 
 // Auto Update
 
-const { autoUpdater } = require("electron-updater")
+const { autoUpdater } = require("electron-updater");
 
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([
@@ -25,6 +26,7 @@ function createWindow(devPath, prodPath) {
   win = new BrowserWindow({
     width: 1200,
     height: 800,
+    title: "Tótem Server",
     webPreferences: {
       // Use pluginOptions.nodeIntegration, leave this alone
       // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
@@ -81,7 +83,7 @@ app.on("ready", async () => {
   }
   win = createWindow("", "index.html");
 
-  autoUpdater.checkForUpdatesAndNotify()
+  autoUpdater.checkForUpdatesAndNotify();
 });
 
 // Exit cleanly on request from parent process in development mode.
@@ -128,54 +130,63 @@ io.on("connection", (socket) => {
 
 ipcMain.handle("get-sockets", async () => {
   let sockets = await io.fetchSockets();
-  
-  let g =sockets.map((s) => {
+
+  let g = sockets.map((s) => {
     if (s.totem) {
       return s.totem;
     } else {
       return {};
     }
   });
-  
-  return g
+
+  return g;
 });
 
 ipcMain.on("disconnect-totem", (event, data) => {
   io.to(data.socket_id).emit("stop_streaming");
 });
 
-ipcMain.on("reload-totem",(event,data)=>{
-  io.to(data.socket_id).emit("reloadTotem")
-})
+ipcMain.on("reload-totem", (event, data) => {
+  io.to(data.socket_id).emit("reloadTotem");
+});
 
-ipcMain.on("set-volume",(event,data)=>{
-  io.to(data.socket_id).emit("changeVolume",data.volume)
-})
+ipcMain.on("set-volume", (event, data) => {
+  io.to(data.socket_id).emit("changeVolume", data.volume);
+});
 
 const dispatch = (data) => {
-  win.webContents.send('win-message', data)
+  win.webContents.send("win-message", data);
+};
+
+autoUpdater.on("checking-for-update", () => {
+  dispatch({ msg: "Checking for update...", status: 0 });
+});
+
+autoUpdater.on("update-available", (info) => {
+  dispatch({ msg: "Update available.", status: 1 });
+});
+
+autoUpdater.on("update-not-available", (info) => {
+  dispatch("Update not available.");
+});
+
+autoUpdater.on("error", (err) => {
+  dispatch("Error in auto-updater. " + err);
+});
+
+autoUpdater.on("download-progress", (progressObj) => {
+  win.webContents.send("download-progress", progressObj.percent);
+});
+
+autoUpdater.on("update-downloaded", (info) => {
+  dispatch({ msg: "Update downloaded", state: 2 });
+});
+
+// Captura de Video
+
+const fs = require("fs");
+
+if (!fs.existsSync(path.join(app.getPath("videos"),"Tótem Videos"))) {
+  console.log("no existe")
+  fs.mkdirSync(path.join(app.getPath("videos"),"Tótem Videos"));
 }
-
-autoUpdater.on('checking-for-update', () => {
-  dispatch({msg:'Checking for update...',status:0})
-})
-
-autoUpdater.on('update-available', (info) => {
-  dispatch({msg:'Update available.',status:1})
-})
-
-autoUpdater.on('update-not-available', (info) => {
-  dispatch('Update not available.')
-})
-
-autoUpdater.on('error', (err) => {
-  dispatch('Error in auto-updater. ' + err)
-})
-
-autoUpdater.on('download-progress', (progressObj) => {
-    win.webContents.send('download-progress', progressObj.percent)
-})
-
-autoUpdater.on('update-downloaded', (info) => {
-  dispatch({msg:'Update downloaded',state:2})
-})
