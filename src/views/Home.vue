@@ -81,9 +81,9 @@
               size="is-small"
               type="is-info is-light"
             ></b-button>
-            <b-field label="Volumen" >
+            <b-field label="Volumen">
               <b-slider
-              @change="setVolume(totem)"
+                @change="setVolume(totem)"
                 v-model="totem.volume"
                 tooltip-type="is-info"
               ></b-slider>
@@ -101,27 +101,23 @@
         </div>
       </div>
     </div>
-    <!-- <audio id="notification">
-      <source type="audio/mp3" src="../assets/notification.mp3" />
-    </audio> -->
-    <!-- <audio id="notification_silent" loop>
-      <source type="audio/mp3" src="../assets/call_in_wait.mp3" />
-    </audio> -->
+    <video id="screen" muted></video>
   </div>
 </template>
 
 <script>
-import { ipcRenderer } from "electron";
+import { desktopCapturer, ipcRenderer } from "electron";
 const Store = require("electron-store");
 const storage = new Store();
 const path = require("path");
+const fs = require("fs");
 /* eslint-disable no-undef */
 var peerJS = new Peer();
 const { app } = require("@electron/remote");
 var sound = new Audio(app.getPath("music") + "/notification.mp3");
 
 var sound_silent = new Audio(app.getPath("music") + "/call_in_wait.mp3");
-
+const moment = require("moment");
 export default {
   name: "Home",
   components: {},
@@ -134,6 +130,8 @@ export default {
       cam_orientation: 0,
       sound: new Audio("./notification.mp3"),
       sound_silent: new Audio("./call_in_wait.mp3"),
+      recorder: null,
+      streamVideo: null,
     };
   },
   beforeMount() {
@@ -141,6 +139,7 @@ export default {
   },
   mounted() {
     this.previewCam();
+    this.screenCapture();
   },
   computed: {
     streaming() {
@@ -223,7 +222,6 @@ export default {
       let self = this;
       totem.callInProgress = true;
       totem.lost_call = false;
-      this.stopSounds();
       for (let index = 0; index < this.eventCall.length; index++) {
         clearTimeout(this.eventCall[index]);
       }
@@ -241,10 +239,10 @@ export default {
           let call = peerJS.call(totem.peer_id, stream);
           call.on("stream", (remoteStream) => {
             let remoteVideo = document.getElementById("totem-cam");
+            totem.estado = "directo";
+            self.handleStream(self.streamVideo, totem);
             remoteVideo.srcObject = remoteStream;
             remoteVideo.play();
-
-            totem.estado = "directo";
           });
         });
     },
@@ -255,24 +253,96 @@ export default {
       let beep = document.getElementById("notification_silent");
       beep.pause();
       beep.currentTime = 0;
+      this.stopRecord();
     },
-    stopSounds() {
-      // let notification_audio = document.getElementById("notification");
-      // let notification_audio_silent = document.getElementById(
-      //   "notification_silent"
-      // );
-      // notification_audio.pause();
-      // notification_audio_silent.pause();
-      // notification_audio.currentTime = 0;
-      // notification_audio_silent.currentTime = 0;
+    screenCapture() {
+      let self = this;
+      desktopCapturer
+        .getSources({ types: ["window"] })
+        .then(async (sources) => {
+          for (const source of sources) {
+            if (source.name === "Tótem Server") {
+              console.log(source);
+              try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                  audio: {
+                    mandatory: {
+                      chromeMediaSource: "desktop",
+                    },
+                  },
+                  video: {
+                    mandatory: {
+                      chromeMediaSource: "desktop",
+                      chromeMediaSourceId: source.id,
+                    },
+                  },
+                });
+                self.streamVideo = stream;
+              } catch (e) {
+                console.log(e);
+              }
+              return;
+            }
+          }
+        });
+    },
+    handleStream(stream, totem) {
+      this.recorder = new MediaRecorder(stream);
+      this.recorder.start();
+      let self = this;
+      // If start does not set timeslice, ondataavailable will be triggered at stop
+      this.recorder.ondataavailable = (event) => {
+        let blob = new Blob([event.data], {
+          type: "video/mp4",
+        });
+        self.saveVideo(blob, totem);
+      };
+      this.recorder.onerror = (err) => {
+        console.error(err);
+      };
+    },
+    saveVideo(blob, totem) {
+      let reader = new FileReader(blob);
+      reader.onload = () => {
+        let buffer = new Buffer(reader.result);
+        fs.writeFile(
+          path.join(
+            app.getPath("videos"),
+            "Tótem Videos",
+            totem.nombre,
+            moment().format("MMMM"),
+            `${moment().format("Y-MM-DD HH:mm:ss")}.mp4`
+          ),
+          buffer,
+          {},
+          // eslint-disable-next-line no-unused-vars
+          (err, res) => {
+            if (err) return console.error(err);
+          }
+        );
+      };
+      reader.onerror = (err) => console.error(err);
+      reader.readAsArrayBuffer(blob);
+    },
+    stopRecord() {
+      try {
+        this.recorder.stop();
+        this.recorder = null;
+      } catch (error) {
+        if (error.message.includes("'stop'")) {
+          console.log(
+            "No se puede Grabar un video si no se ha iniciado la llamada"
+          );
+        }
+      }
     },
     reloadTotem(totem) {
-      this.stopSounds();
+      this.stopRecord();
       ipcRenderer.send("reload-totem", totem);
     },
-    setVolume(totem){
-      ipcRenderer.send("set-volume",totem)
-    }
+    setVolume(totem) {
+      ipcRenderer.send("set-volume", totem);
+    },
   },
 };
 </script>
@@ -335,5 +405,9 @@ $height_cam: 225px;
 
     object-fit: fill;
   }
+}
+
+#screen {
+  display: none;
 }
 </style>
