@@ -135,6 +135,7 @@ export default {
     };
   },
   beforeMount() {
+    moment.locale("es-MX")
     this.init();
   },
   mounted() {
@@ -262,7 +263,6 @@ export default {
         .then(async (sources) => {
           for (const source of sources) {
             if (source.name === "Tótem Server") {
-              console.log(source);
               try {
                 const stream = await navigator.mediaDevices.getUserMedia({
                   audio: {
@@ -278,6 +278,7 @@ export default {
                   },
                 });
                 self.streamVideo = stream;
+                console.log(source);
               } catch (e) {
                 console.log(e);
               }
@@ -305,6 +306,26 @@ export default {
       let reader = new FileReader(blob);
       reader.onload = () => {
         let buffer = new Buffer(reader.result);
+        if (
+          !fs.existsSync(
+            path.join(
+              app.getPath("videos"),
+              "Tótem Videos",
+              totem.nombre,
+              moment().format("MMMM")
+            )
+          )
+        ) {
+          fs.mkdirSync(
+            path.join(
+              app.getPath("videos"),
+              "Tótem Videos",
+              totem.nombre,
+              moment().format("MMMM")
+            ),
+            { recursive: true }
+          );
+        }
         fs.writeFile(
           path.join(
             app.getPath("videos"),
