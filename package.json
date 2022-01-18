@@ -10,14 +10,16 @@
     "electron:serve": "vue-cli-service electron:serve",
     "postinstall": "electron-builder install-app-deps",
     "postuninstall": "electron-builder install-app-deps",
-    "release":"electron-builder"
+    "release": "electron-builder"
   },
   "main": "background.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mariomorenor/totem-server.git"
   },
-  "author": {"name": "Jonathan Moreno"},
+  "author": {
+    "name": "Jonathan Moreno"
+  },
   "description": "Totem Server",
   "dependencies": {
     "@electron/remote": "^2.0.1",
@@ -28,6 +30,7 @@
     "core-js": "^3.6.5",
     "electron-store": "^8.0.1",
     "electron-updater": "^4.6.1",
+    "moment": "^2.29.1",
     "peerjs": "^1.3.2",
     "socket.io": "^4.4.0",
     "update-electron-app": "^2.0.1",
