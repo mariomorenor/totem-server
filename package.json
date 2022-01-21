@@ -1,6 +1,6 @@
 {
   "name": "totem-server",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -46,6 +46,7 @@
     "@vue/cli-plugin-vuex": "~4.5.0",
     "@vue/cli-service": "~4.5.0",
     "babel-eslint": "^10.1.0",
+    "cache-loader": "^4.1.0",
     "electron": "^13.0.0",
     "electron-devtools-installer": "^3.1.0",
     "eslint": "^6.7.2",
