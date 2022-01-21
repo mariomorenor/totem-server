@@ -251,9 +251,9 @@ export default {
       ipcRenderer.send("disconnect-totem", { socket_id: totem.socket_id });
       totem.estado = "promocion";
       totem.callInProgress = false;
-      let beep = document.getElementById("notification_silent");
-      beep.pause();
-      beep.currentTime = 0;
+      // let beep = document.getElementById("notification_silent");
+      // beep.pause();
+      // beep.currentTime = 0;
       this.stopRecord();
     },
     screenCapture() {
