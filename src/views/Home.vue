@@ -266,7 +266,7 @@ export default {
               try {
                 const stream = await navigator.mediaDevices.getUserMedia({
                   audio: {
-                    mandatory: {
+                          mandatory: {
                       chromeMediaSource: "desktop",
                     },
                   },
@@ -332,7 +332,7 @@ export default {
             "Tótem Videos",
             totem.nombre,
             moment().format("MMMM"),
-            `${moment().format("Y-MM-DD HH:mm:ss")}.mp4`
+            `${moment().format("Y-MM-DD HH[-]mm[-]ss")}.mp4`
           ),
           buffer,
           {},
