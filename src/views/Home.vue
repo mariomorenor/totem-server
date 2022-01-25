@@ -132,6 +132,7 @@ export default {
       sound_silent: new Audio("./call_in_wait.mp3"),
       recorder: null,
       streamVideo: null,
+      streamcom: null,
     };
   },
   beforeMount() {
@@ -211,7 +212,7 @@ export default {
           video: {
             deviceId: self.webcam,
           },
-          audio: false,
+          audio: true,
         })
         .then((stream) => {
           let video = document.getElementById("webcam");
@@ -266,8 +267,8 @@ export default {
               try {
                 const stream = await navigator.mediaDevices.getUserMedia({
                   audio: {
-                          mandatory: {
-                      chromeMediaSource: "desktop",
+                    mandatory: {
+                      chromeMediaSource: "desktop"
                     },
                   },
                   video: {
@@ -277,7 +278,14 @@ export default {
                     },
                   },
                 });
-                self.streamVideo = stream;
+                const audio = await navigator.mediaDevices.getUserMedia({
+                  audio: {
+                    deviceId:self.microphone
+                  },
+                  video: false
+                });
+                self.streamcom = audio
+                self.streamVideo = new MediaStream([...stream.getVideoTracks(), ...audio.getAudioTracks()]);
                 console.log(source);
               } catch (e) {
                 console.log(e);
