@@ -88,25 +88,45 @@
                 tooltip-type="is-info"
               ></b-slider>
             </b-field>
-            <b-collapse
-              :open="false"
-              position="is-bottom"
-              aria-id="contentIdForA11y1"
-            >
+            <b-collapse :open="false" animation="slide" v-if="totem.salidas">
               <template #trigger="props">
-                <a aria-controls="contentIdForA11y1">
+                <a>
                   <b-icon
                     :icon="!props.open ? 'sort-down' : 'sort-up'"
                   ></b-icon>
-                  {{ !props.open ? "Mostrar Accesos" : "Ocultar Accesos" }}
+                  {{ !props.open ? "Accesos" : "Accesos" }}
                 </a>
               </template>
-                <div>
-                  <b-field>
-                    <!-- <b-switch v-model="isSwitched">
-                      {{ isSwitched }}
-                    </b-switch> -->
-                  </b-field>
+              <div>
+                <div v-for="salida in totem.salidas" :key="salida.id">
+                  <div v-if="salida.tiempo">
+                    <b-button
+                      @click="activar(salida)"
+                      type="is-info"
+                      size="is-small"
+                      class="mr-1"
+                      >{{ salida.nombre }}</b-button
+                    >
+                  </div>
+                  <div v-else>
+                    <b-field :label="salida.nombre">
+                      <b-button
+                        @click="activar(salida)"
+                        type="is-info"
+                        size="is-small"
+                        class="mr-1"
+                        >Activar</b-button
+                      >
+                      <b-button
+                        @click="desactivar(salida)"
+                        type="is-warning"
+                        size="is-small"
+                        class="mr-1"
+                        >Desactivar</b-button
+                      >
+                    </b-field>
+                  </div>
+                </div>
               </div>
             </b-collapse>
           </div>
@@ -181,6 +201,16 @@ export default {
 
       ipcRenderer.on("nuevo-totem", (event, data) => {
         this.totems.push(data);
+        let tSalidas = storage.get("totems");
+        console.log(tSalidas);
+        this.totems.map((t) => {
+          t.show_salidas = false;
+          tSalidas.map((ts) => {
+            if (t.ip == ts.ip) {
+              t.salidas = ts.salidas;
+            }
+          });
+        });
       });
 
       ipcRenderer.invoke("get-sockets").then((sockets) => {
@@ -188,6 +218,16 @@ export default {
           if (Object.keys(s).length > 0) {
             return s;
           }
+        });
+
+        let tSalidas = storage.get("totems");
+        this.totems.map((t) => {
+          t.show_salidas = false;
+          tSalidas.map((ts) => {
+            if (t.ip == ts.ip) {
+              t.salidas = ts.salidas;
+            }
+          });
         });
       });
 
@@ -290,7 +330,7 @@ export default {
                 const stream = await navigator.mediaDevices.getUserMedia({
                   audio: {
                     mandatory: {
-                      chromeMediaSource: "desktop"
+                      chromeMediaSource: "desktop",
                     },
                   },
                   video: {
@@ -302,12 +342,15 @@ export default {
                 });
                 const audio = await navigator.mediaDevices.getUserMedia({
                   audio: {
-                    deviceId:self.microphone
+                    deviceId: self.microphone,
                   },
-                  video: false
+                  video: false,
                 });
-                self.streamcom = audio
-                self.streamVideo = new MediaStream([...stream.getVideoTracks(), ...audio.getAudioTracks()]);
+                self.streamcom = audio;
+                self.streamVideo = new MediaStream([
+                  ...stream.getVideoTracks(),
+                  ...audio.getAudioTracks(),
+                ]);
                 console.log(source);
               } catch (e) {
                 console.log(e);
@@ -394,22 +437,49 @@ export default {
     setVolume(totem) {
       ipcRenderer.send("set-volume", totem);
     },
-    setEntrance() {
-      console.log("Entrance");
-      axios
-        .get("http://192.168.15.42/k02=1")
-        .then((response) => {
-          console.log(response);
-        })
-        .catch((error) => {
-          console.log(error);
+    activar(salida) {
+      if (salida.tiempo) {
+        axios.get(`${salida.direccion}=1`).then(() => {
+          this.$buefy.toast.open({
+            position: "is-bottom",
+            message: `Se ha abierto el Accesso a ${salida.nombre}`,
+            queue: true,
+          });
+          setTimeout(() => {
+            axios.get(`${salida.direccion}=0`).then(() => {});
+          }, salida.segundos * 1000);
         });
+      } else {
+        axios.get(`${salida.direccion}=1`).then(() => {
+          this.$buefy.toast.open({
+            position: "is-bottom",
+            message: `Se ha abierto el Accesso a ${salida.nombre}`,
+            queue: true,
+          });
+        });
+      }
+    },
+    desactivar(salida) {
+      axios.get(`${salida.direccion}=0`).then(() => {
+        this.$buefy.toast.open({
+          position: "is-bottom",
+          message: `Se ha cerrado el Acceso a ${salida.nombre}`,
+          queue: true,
+        });
+      });
+    },
+    verAccesos(totem) {
+      console.log(totem);
+      totem.show_salidas = !totem.show_salidas;
     },
   },
 };
 </script>
 
 <style lang="scss" scoped>
+.home {
+  user-select: none;
+}
 .totem-name {
   width: 130px;
   font-size: 12px;

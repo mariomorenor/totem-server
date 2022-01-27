@@ -65,22 +65,31 @@
         </div>
         <div class="is-flex is-flex-wrap-wrap is-justify-content-space-evenly">
           <div
-            v-for="salida in totem.salidas"
+            v-for="(salida, salida_index) in totem.salidas"
             :key="salida.id"
             class="card my-2 mb-5"
           >
             <div class="card-content">
-              <b-field label="Dirección HTTP" label-position="on-border">
+              <b-field label="Dirección IP" label-position="on-border">
                 <b-input v-model="salida.ip" size="is-small"></b-input>
+              </b-field>
+              <b-field label="Número" label-position="on-border">
+                <b-input v-model="salida.numero" size="is-small"></b-input>
               </b-field>
               <b-field label="Nombre" label-position="on-border">
                 <b-input v-model="salida.nombre" size="is-small"></b-input>
+              </b-field>
+              <b-field label="Tiempo">
+                <b-switch v-model="salida.tiempo"></b-switch>
+                <b-field label="Segundos" v-if="salida.tiempo" label-position="on-border">
+                  <b-numberinput v-model="salida.segundos" :controls="false" size="is-small"></b-numberinput>
+                </b-field>
               </b-field>
             </div>
             <footer class="card-footer">
               <div class="card-footer-item">
                 <b-button
-                  @click="eliminarSalida(index, salida, totem)"
+                  @click="eliminarSalida(salida_index, salida, totem)"
                   type="is-danger"
                   size="is-small"
                   icon-right="trash-alt"
@@ -88,7 +97,8 @@
                 >
               </div>
               <div class="card-footer-item">
-                <b-button :disabled="!salida.ip"
+                <b-button
+                  :disabled="!salida.ip"
                   @click="probarSalida(salida, 1)"
                   type="is-info"
                   size="is-small"
@@ -96,7 +106,7 @@
                   >Activar</b-button
                 >
                 <b-button
-                :disabled="!salida.ip"
+                  :disabled="!salida.ip"
                   @click="probarSalida(salida, 0)"
                   type="is-warning"
                   size="is-small"
@@ -135,7 +145,7 @@ export default {
         message: `Ingrese la IP del Tótem`,
         inputAttrs: {
           placeholder: "e.g. 192.168.1.1",
-          maxlength: 13,
+          maxlength: 15,
         },
         trapFocus: true,
         onConfirm: (value) => {
@@ -169,12 +179,21 @@ export default {
         duration: 2000,
         queue: true,
       });
+      this.totems.map((t) => {
+        t.salidas.map((s) => {
+          s.direccion = `http://${s.ip}/k${s.numero}`;
+        });
+      });
       storage.set("totems", this.totems);
     },
     agregarSalida(totem) {
       totem.salidas.push({
         nombre: "",
         ip: "",
+        numero: "",
+        direccion: "",
+        tiempo: false,
+        segundos: 0,
       });
     },
     eliminarSalida(index, salida, totem) {
@@ -187,17 +206,17 @@ export default {
         hasIcon: true,
         onConfirm: () => {
           totem.salidas.splice(index, 1);
-          this.actualizarTotem();
+          //   this.actualizarTotem();
         },
       });
     },
     probarSalida(salida, accion) {
       axios.get(`${salida.ip}=${accion}`).then((res) => {
         this.$buefy.toast.open({
-            position:"is-bottom",
-            message:res.data,
-            queue:true
-        })
+          position: "is-bottom",
+          message: res.data,
+          queue: true,
+        });
       });
     },
   },
