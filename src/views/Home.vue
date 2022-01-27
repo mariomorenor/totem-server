@@ -446,7 +446,13 @@ export default {
             queue: true,
           });
           setTimeout(() => {
-            axios.get(`${salida.direccion}=0`).then(() => {});
+            axios.get(`${salida.direccion}=0`).then(() => {
+              this.$buefy.toast.open({
+                position: "is-bottom",
+                message: `Se ha cerrado el Accesso a ${salida.nombre}`,
+                queue: true,
+              });
+            });
           }, salida.segundos * 1000);
         });
       } else {
