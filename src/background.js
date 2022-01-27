@@ -190,3 +190,5 @@ if (!fs.existsSync(path.join(app.getPath("videos"),"Tótem Videos"))) {
   console.log("no existe")
   fs.mkdirSync(path.join(app.getPath("videos"),"Tótem Videos"));
 }
+
+app.commandLine.appendSwitch('ignore-certificate-errors')

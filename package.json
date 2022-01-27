@@ -1,6 +1,6 @@
 {
   "name": "totem-server",
-  "version": "2.2.2",
+  "version": "2.3.0",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -26,6 +26,7 @@
     "@fortawesome/fontawesome-svg-core": "^1.2.36",
     "@fortawesome/free-solid-svg-icons": "^5.15.4",
     "@fortawesome/vue-fontawesome": "^2.0.6",
+    "axios": "^0.25.0",
     "buefy": "^0.9.14",
     "core-js": "^3.6.5",
     "electron-store": "^8.0.1",

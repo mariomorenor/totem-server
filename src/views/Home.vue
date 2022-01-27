@@ -88,6 +88,47 @@
                 tooltip-type="is-info"
               ></b-slider>
             </b-field>
+            <b-collapse :open="false" animation="slide" v-if="totem.salidas">
+              <template #trigger="props">
+                <a>
+                  <b-icon
+                    :icon="!props.open ? 'sort-down' : 'sort-up'"
+                  ></b-icon>
+                  {{ !props.open ? "Accesos" : "Accesos" }}
+                </a>
+              </template>
+              <div>
+                <div v-for="salida in totem.salidas" :key="salida.id">
+                  <div v-if="salida.tiempo">
+                    <b-button
+                      @click="activar(salida)"
+                      type="is-info"
+                      size="is-small"
+                      class="mr-1"
+                      >{{ salida.nombre }}</b-button
+                    >
+                  </div>
+                  <div v-else>
+                    <b-field :label="salida.nombre">
+                      <b-button
+                        @click="activar(salida)"
+                        type="is-info"
+                        size="is-small"
+                        class="mr-1"
+                        >Activar</b-button
+                      >
+                      <b-button
+                        @click="desactivar(salida)"
+                        type="is-warning"
+                        size="is-small"
+                        class="mr-1"
+                        >Desactivar</b-button
+                      >
+                    </b-field>
+                  </div>
+                </div>
+              </div>
+            </b-collapse>
           </div>
           <div
             v-if="totem.lost_call"
@@ -107,6 +148,7 @@
 
 <script>
 import { desktopCapturer, ipcRenderer } from "electron";
+import axios from "axios";
 const Store = require("electron-store");
 const storage = new Store();
 const path = require("path");
@@ -132,10 +174,11 @@ export default {
       sound_silent: new Audio("./call_in_wait.mp3"),
       recorder: null,
       streamVideo: null,
+      streamcom: null,
     };
   },
   beforeMount() {
-    moment.locale("es-MX")
+    moment.locale("es-MX");
     this.init();
   },
   mounted() {
@@ -158,6 +201,16 @@ export default {
 
       ipcRenderer.on("nuevo-totem", (event, data) => {
         this.totems.push(data);
+        let tSalidas = storage.get("totems");
+        console.log(tSalidas);
+        this.totems.map((t) => {
+          t.show_salidas = false;
+          tSalidas.map((ts) => {
+            if (t.ip == ts.ip) {
+              t.salidas = ts.salidas;
+            }
+          });
+        });
       });
 
       ipcRenderer.invoke("get-sockets").then((sockets) => {
@@ -165,6 +218,16 @@ export default {
           if (Object.keys(s).length > 0) {
             return s;
           }
+        });
+
+        let tSalidas = storage.get("totems");
+        this.totems.map((t) => {
+          t.show_salidas = false;
+          tSalidas.map((ts) => {
+            if (t.ip == ts.ip) {
+              t.salidas = ts.salidas;
+            }
+          });
         });
       });
 
@@ -211,7 +274,7 @@ export default {
           video: {
             deviceId: self.webcam,
           },
-          audio: false,
+          audio: true,
         })
         .then((stream) => {
           let video = document.getElementById("webcam");
@@ -277,7 +340,17 @@ export default {
                     },
                   },
                 });
-                self.streamVideo = stream;
+                const audio = await navigator.mediaDevices.getUserMedia({
+                  audio: {
+                    deviceId: self.microphone,
+                  },
+                  video: false,
+                });
+                self.streamcom = audio;
+                self.streamVideo = new MediaStream([
+                  ...stream.getVideoTracks(),
+                  ...audio.getAudioTracks(),
+                ]);
                 console.log(source);
               } catch (e) {
                 console.log(e);
@@ -332,7 +405,7 @@ export default {
             "Tótem Videos",
             totem.nombre,
             moment().format("MMMM"),
-            `${moment().format("Y-MM-DD HH:mm:ss")}.mp4`
+            `${moment().format("Y-MM-DD HH[-]mm[-]ss")}.mp4`
           ),
           buffer,
           {},
@@ -364,11 +437,55 @@ export default {
     setVolume(totem) {
       ipcRenderer.send("set-volume", totem);
     },
+    activar(salida) {
+      if (salida.tiempo) {
+        axios.get(`${salida.direccion}=1`).then(() => {
+          this.$buefy.toast.open({
+            position: "is-bottom",
+            message: `Se ha abierto el Accesso a ${salida.nombre}`,
+            queue: true,
+          });
+          setTimeout(() => {
+            axios.get(`${salida.direccion}=0`).then(() => {
+              this.$buefy.toast.open({
+                position: "is-bottom",
+                message: `Se ha cerrado el Accesso a ${salida.nombre}`,
+                queue: true,
+              });
+            });
+          }, salida.segundos * 1000);
+        });
+      } else {
+        axios.get(`${salida.direccion}=1`).then(() => {
+          this.$buefy.toast.open({
+            position: "is-bottom",
+            message: `Se ha abierto el Accesso a ${salida.nombre}`,
+            queue: true,
+          });
+        });
+      }
+    },
+    desactivar(salida) {
+      axios.get(`${salida.direccion}=0`).then(() => {
+        this.$buefy.toast.open({
+          position: "is-bottom",
+          message: `Se ha cerrado el Acceso a ${salida.nombre}`,
+          queue: true,
+        });
+      });
+    },
+    verAccesos(totem) {
+      console.log(totem);
+      totem.show_salidas = !totem.show_salidas;
+    },
   },
 };
 </script>
 
 <style lang="scss" scoped>
+.home {
+  user-select: none;
+}
 .totem-name {
   width: 130px;
   font-size: 12px;
