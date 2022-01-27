@@ -98,35 +98,22 @@
                 </a>
               </template>
               <div>
-                <div v-for="salida in totem.salidas" :key="salida.id">
-                  <div v-if="salida.tiempo">
-                    <b-button
-                      @click="activar(salida)"
-                      type="is-info"
-                      size="is-small"
-                      class="mr-1"
-                      >{{ salida.nombre }}</b-button
-                    >
-                  </div>
-                  <div v-else>
-                    <b-field :label="salida.nombre">
-                      <b-button
-                        @click="activar(salida)"
-                        type="is-info"
-                        size="is-small"
-                        class="mr-1"
-                        >Activar</b-button
-                      >
-                      <b-button
-                        @click="desactivar(salida)"
-                        type="is-warning"
-                        size="is-small"
-                        class="mr-1"
-                        >Desactivar</b-button
-                      >
-                    </b-field>
-                  </div>
-                </div>
+                <template v-for="salida in totem.salidas">
+                  <template v-if="salida.tiempo">
+                    <b-button class="mr-1" type="is-info" size="is-small" @click="activar(salida)" :key="salida.id">{{
+                      salida.nombre
+                    }}</b-button>
+                  </template>
+                  <template v-else>
+                    <b-dropdown :triggers="['hover']" :key="salida.id">
+                      <template #trigger>
+                        <b-button size="is-small" class="mr-1" type="is-info">{{salida.nombre}}</b-button>
+                      </template>
+                      <b-dropdown-item @click="activar(salida)" >Activar</b-dropdown-item>
+                      <b-dropdown-item @click="desactivar(salida)" >Desactivar</b-dropdown-item>
+                    </b-dropdown>
+                  </template>
+                </template>
               </div>
             </b-collapse>
           </div>
