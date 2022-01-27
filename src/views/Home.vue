@@ -88,6 +88,27 @@
                 tooltip-type="is-info"
               ></b-slider>
             </b-field>
+            <b-collapse
+              :open="false"
+              position="is-bottom"
+              aria-id="contentIdForA11y1"
+            >
+              <template #trigger="props">
+                <a aria-controls="contentIdForA11y1">
+                  <b-icon
+                    :icon="!props.open ? 'menu-down' : 'menu-up'"
+                  ></b-icon>
+                  {{ !props.open ? "Mostrar Accesos" : "Ocultar Accesos" }}
+                </a>
+              </template>
+                <div>
+                  <b-field>
+                    <b-switch v-model="isSwitched">
+                      {{ isSwitched }}
+                    </b-switch>
+                  </b-field>
+              </div>
+            </b-collapse>
           </div>
           <div
             v-if="totem.lost_call"
@@ -107,6 +128,7 @@
 
 <script>
 import { desktopCapturer, ipcRenderer } from "electron";
+import axios from "axios";
 const Store = require("electron-store");
 const storage = new Store();
 const path = require("path");
@@ -135,7 +157,7 @@ export default {
     };
   },
   beforeMount() {
-    moment.locale("es-MX")
+    moment.locale("es-MX");
     this.init();
   },
   mounted() {
@@ -363,6 +385,17 @@ export default {
     },
     setVolume(totem) {
       ipcRenderer.send("set-volume", totem);
+    },
+    setEntrance() {
+      console.log("Entrance");
+      axios
+        .get("http://192.168.15.42/k02=1")
+        .then((response) => {
+          console.log(response);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     },
   },
 };
