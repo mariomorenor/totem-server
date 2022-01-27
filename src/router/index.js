@@ -19,6 +19,11 @@ const routes = [
     name: "config",
     component: () => import("../views/Config.vue"),
   },
+  {
+    path: "/salidas",
+    name: "salidas",
+    component: () => import("../views/Salidas.vue"),
+  },
 ];
 
 const router = new VueRouter({
