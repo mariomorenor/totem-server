@@ -96,16 +96,16 @@
               <template #trigger="props">
                 <a aria-controls="contentIdForA11y1">
                   <b-icon
-                    :icon="!props.open ? 'menu-down' : 'menu-up'"
+                    :icon="!props.open ? 'sort-down' : 'sort-up'"
                   ></b-icon>
                   {{ !props.open ? "Mostrar Accesos" : "Ocultar Accesos" }}
                 </a>
               </template>
                 <div>
                   <b-field>
-                    <b-switch v-model="isSwitched">
+                    <!-- <b-switch v-model="isSwitched">
                       {{ isSwitched }}
-                    </b-switch>
+                    </b-switch> -->
                   </b-field>
               </div>
             </b-collapse>
