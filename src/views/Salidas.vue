@@ -211,7 +211,7 @@ export default {
       });
     },
     probarSalida(salida, accion) {
-      axios.get(`${salida.ip}=${accion}`).then((res) => {
+      axios.get(`${salida.direccion}=${accion}`).then((res) => {
         this.$buefy.toast.open({
           position: "is-bottom",
           message: res.data,
