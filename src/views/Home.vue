@@ -102,20 +102,23 @@
                 <template v-for="salida in totem.salidas">
                   <template v-if="salida.tiempo">
                     <b-button
+                      :type="salida.state ? 'is-warning' : 'is-info'"
                       class="mr-1"
-                      type="is-info"
                       size="is-small"
                       @click="activar(salida)"
-                      :key="salida.id"
+                      :key="salida"
                       >{{ salida.nombre }}</b-button
                     >
                   </template>
                   <template v-else>
                     <b-dropdown :triggers="['hover']" :key="salida.id">
                       <template #trigger>
-                        <b-button size="is-small" class="mr-1" type="is-info">{{
-                          salida.nombre
-                        }}</b-button>
+                        <b-button
+                          size="is-small"
+                          class="mr-1"
+                          :type="salida.state ? 'is-warning' : 'is-info'"
+                          >{{ salida.nombre }}</b-button
+                        >
                       </template>
                       <b-dropdown-item @click="activar(salida)"
                         >Activar</b-dropdown-item
@@ -207,6 +210,7 @@ export default {
           tSalidas.map((ts) => {
             if (t.ip == ts.ip) {
               t.salidas = ts.salidas;
+              ts.salidas.map((s) => (s.state = false));
             }
           });
         });
@@ -313,9 +317,6 @@ export default {
       ipcRenderer.send("disconnect-totem", { socket_id: totem.socket_id });
       totem.estado = "promocion";
       totem.callInProgress = false;
-      // let beep = document.getElementById("notification_silent");
-      // beep.pause();
-      // beep.currentTime = 0;
       this.stopRecord();
     },
     screenCapture() {
@@ -437,6 +438,9 @@ export default {
       ipcRenderer.send("set-volume", totem);
     },
     activar(salida) {
+      let self = this;
+      salida.state = true;
+      console.log("s");
       if (salida.tiempo) {
         axios.get(`${salida.direccion}=1`).then(() => {
           this.$buefy.toast.open({
@@ -445,13 +449,7 @@ export default {
             queue: true,
           });
           setTimeout(() => {
-            axios.get(`${salida.direccion}=0`).then(() => {
-              this.$buefy.toast.open({
-                position: "is-bottom",
-                message: `Se ha cerrado el Accesso a ${salida.nombre}`,
-                queue: true,
-              });
-            });
+            self.desactivar(salida);
           }, salida.segundos * 1000);
         });
       } else {
@@ -461,16 +459,19 @@ export default {
             message: `Se ha abierto el Accesso a ${salida.nombre}`,
             queue: true,
           });
+          salida.state = true;
         });
       }
     },
     desactivar(salida) {
+      salida.state = false;
       axios.get(`${salida.direccion}=0`).then(() => {
         this.$buefy.toast.open({
           position: "is-bottom",
           message: `Se ha cerrado el Acceso a ${salida.nombre}`,
           queue: true,
         });
+        salida.state = false;
       });
     },
     verAccesos(totem) {
