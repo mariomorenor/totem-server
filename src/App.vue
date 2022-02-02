@@ -22,6 +22,11 @@
               :to="{ name: 'salidas' }"
               label="Salidas"
             ></b-menu-item>
+            <b-menu-item
+              tag="router-link"
+              :to="{ name: 'automation' }"
+              label="Automatización"
+            ></b-menu-item>
           </b-menu-list>
         </b-menu>
       </div>

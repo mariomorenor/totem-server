@@ -24,6 +24,11 @@ const routes = [
     name: "salidas",
     component: () => import("../views/Salidas.vue"),
   },
+  {
+    path: "/automation",
+    name: "automation",
+    component: () => import("../views/Automation.vue"),
+  },
 ];
 
 const router = new VueRouter({

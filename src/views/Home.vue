@@ -57,6 +57,7 @@
             <p>
               <strong>Video:</strong>
               <span>{{ videoName(totem.videos[0]) }}</span>
+              <b-button @click="changeVideo(totem)" type="is-success" size="is-small">Cambiar</b-button>
             </p>
             <b-button
               :disabled="totem.callInProgress || streaming"
@@ -100,17 +101,28 @@
               <div>
                 <template v-for="salida in totem.salidas">
                   <template v-if="salida.tiempo">
-                    <b-button class="mr-1" type="is-info" size="is-small" @click="activar(salida)" :key="salida.id">{{
-                      salida.nombre
-                    }}</b-button>
+                    <b-button
+                      class="mr-1"
+                      type="is-info"
+                      size="is-small"
+                      @click="activar(salida)"
+                      :key="salida.id"
+                      >{{ salida.nombre }}</b-button
+                    >
                   </template>
                   <template v-else>
                     <b-dropdown :triggers="['hover']" :key="salida.id">
                       <template #trigger>
-                        <b-button size="is-small" class="mr-1" type="is-info">{{salida.nombre}}</b-button>
+                        <b-button size="is-small" class="mr-1" type="is-info">{{
+                          salida.nombre
+                        }}</b-button>
                       </template>
-                      <b-dropdown-item @click="activar(salida)" >Activar</b-dropdown-item>
-                      <b-dropdown-item @click="desactivar(salida)" >Desactivar</b-dropdown-item>
+                      <b-dropdown-item @click="activar(salida)"
+                        >Activar</b-dropdown-item
+                      >
+                      <b-dropdown-item @click="desactivar(salida)"
+                        >Desactivar</b-dropdown-item
+                      >
                     </b-dropdown>
                   </template>
                 </template>
@@ -465,6 +477,13 @@ export default {
       console.log(totem);
       totem.show_salidas = !totem.show_salidas;
     },
+    changeVideo(totem){
+      console.log(totem.videos)
+      //mostrar en ventana los videos
+      //envia por socket ruta video
+      //this.reloadTotem()
+    }
+    
   },
 };
 </script>
