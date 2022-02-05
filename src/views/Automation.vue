@@ -21,20 +21,26 @@
           <template v-for="salida in cliente.salidas">
             <template v-if="salida.tiempo">
               <b-button
+                style="margin: 10px"
                 class="mr-1"
                 type="is-info"
                 size="is-small"
                 @click="activar(salida)"
                 :key="salida.id"
-                >{{ salida.nombre }}</b-button
-              >
+                >{{ salida.nombre }}
+              </b-button>
             </template>
             <template v-else>
               <b-dropdown :triggers="['hover']" :key="salida.id">
                 <template #trigger>
-                  <b-button size="is-small" class="mr-1" type="is-info">{{
-                    salida.nombre
-                  }}</b-button>
+                  <b-button
+                    style="margin: 10px"
+                    size="is-small"
+                    class="mr-1"
+                    type="is-info"
+                  >
+                    {{ salida.nombre }}
+                  </b-button>
                 </template>
                 <b-dropdown-item @click="activar(salida)"
                   >Activar</b-dropdown-item
