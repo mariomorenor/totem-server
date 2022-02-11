@@ -23,7 +23,7 @@
               <b-button
                 style="margin: 10px"
                 class="mr-1"
-                type="is-info"
+                :type="salida.state ? 'is-danger' : 'is-info'"
                 size="is-small"
                 @click="activar(salida)"
                 :key="salida.id"
@@ -37,7 +37,7 @@
                     style="margin: 10px"
                     size="is-small"
                     class="mr-1"
-                    type="is-info"
+                    :type="salida.state ? 'is-danger' : 'is-info'"
                   >
                     {{ salida.nombre }}
                   </b-button>
